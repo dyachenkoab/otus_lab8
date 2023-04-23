@@ -34,8 +34,15 @@ public:
     };
     bool passThrough(const string &fileName) override
     {
+        auto is_subpath = [](const fs::path &path, const fs::path &base) {
+            const auto mismatch_pair =
+                std::mismatch(path.begin(), path.end(), base.begin(), base.end());
+            return mismatch_pair.second == base.end();
+        };
+
+        auto path = fs::system_complete(fs::path(fileName.c_str()).remove_filename());
         for (auto &x : m_excluded) {
-            if (boost::icontains(fileName, x)) {
+            if (is_subpath(path, fs::system_complete(fs::path(x.c_str())))) {
                 return false;
             }
         }
