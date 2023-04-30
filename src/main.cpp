@@ -23,7 +23,8 @@ int main(int argc, const char *argv[])
             }
             processor.scanLevel(lev);
          }), "Scan level")
-         ("min,m", po::value<int>()->default_value(1), "Minimal file size (at bytes) to scan")( "mask", po::value<string>(),"Mask")
+         ("min,m", po::value<int>()->default_value(1), "Minimal file size (at bytes) to scan")
+         ("mask", po::value<string>(),"Mask")
          ("blockSize,b", po::value<size_t>()->default_value(5)->notifier([&processor](size_t size) {
             processor.blockSize(size);
           }),"Size of block (at bytes) to compare")

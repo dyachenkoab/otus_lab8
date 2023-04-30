@@ -2,7 +2,9 @@
 
 Processor::Processor() { }
 
-Processor::~Processor() { delete [] m_buf; }
+Processor::~Processor()
+{
+}
 
 void Processor::scanLevel(const int level)
 {
@@ -13,12 +15,10 @@ void Processor::blockSize(const size_t size)
 {
     if (size != 0) {
         m_blockSize = size;
-        delete[] m_buf;
-        m_buf = new char[m_blockSize + 1];
     }
 }
 
-void Processor::hashAlgo(const boost::container::string &hash)
+void Processor::hashAlgo(const string &hash)
 {
     if (hash == "crc32") {
         hashStrategy.reset(new CRC32());
@@ -27,7 +27,7 @@ void Processor::hashAlgo(const boost::container::string &hash)
     hashStrategy.reset(new DefaultHash());
 }
 
-void Processor::scanDirs(const boost::container::string &data)
+void Processor::scanDirs(const string &data)
 {
     split(data, m_included);
 }
@@ -87,11 +87,17 @@ void Processor::checkFile()
 void Processor::fillFileList(const fs::path &fPath)
 {
     if (fs::exists(fs::status(fPath))) {
+        fs::directory_iterator itr(fPath);
         fs::directory_iterator end_itr; // default construction yields past-the-end
-        for (fs::directory_iterator itr(fPath); itr != end_itr; ++itr) {
+        auto good = [&itr](const unique_ptr<Request> &req) {
+            return req->passThrough(itr->path().c_str());
+        };
+
+        for (; itr != end_itr; ++itr) {
             if (is_directory(itr->status()) && m_level == 1) {
                 fillFileList(itr->path());
-            } else if (is_regular_file(itr->status()) && good(itr->path())) {
+            } else if (is_regular_file(itr->status())
+                   && std::all_of(m_requests.cbegin(), m_requests.cend(), good)) {
                 filesAtCurrentPath.emplace_back(FileInfo { itr->path() });
             }
         }
@@ -149,28 +155,13 @@ uint32_t Processor::getBlock(fileInfoIterator &it, fs::ifstream &ifs, const size
 
 uint32_t Processor::hashBulk(fs::ifstream &fstream)
 {
-    const std::streamsize sz = m_blockSize + 1;
-    fstream.read(m_buf, m_blockSize);
+    co::vector<char> buf(m_blockSize + 1, 0);
+    fstream.read(buf.data(), m_blockSize);
 
     if (!fstream.gcount()) {
         return 0;
     }
 
-    if (fstream.gcount() < sz) {
-        std::fill(&m_buf[fstream.gcount()], &m_buf[sz], 0);
-    }
-
-    auto s = hashStrategy->hashBulk(m_buf, m_blockSize);
-    std::fill(&m_buf[0], &m_buf[sz], 0);
+    auto s = hashStrategy->hashBulk(buf.data(), m_blockSize);
     return s;
-}
-
-bool Processor::good(const fs::path &file)
-{
-    for (const auto &req : m_requests) {
-        if (!req->passThrough(file.c_str())) {
-            return false;
-        }
-    }
-    return true;
 }

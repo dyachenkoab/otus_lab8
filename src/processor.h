@@ -61,7 +61,6 @@ private:
     void compareFiles(fileInfoIterator &it, fileInfoIterator &it1);
     uint32_t getBlock(fileInfoIterator &it, fs::ifstream &ifs, const size_t block);
     uint32_t hashBulk(fs::ifstream &fstream);
-    bool good(const fs::path &file);
 
     co::vector<string> m_included;
     co::vector<unique_ptr<Request>> m_requests;
@@ -70,7 +69,6 @@ private:
     int m_level = 0;
     size_t m_blockSize = 0;
     random_generator gen;
-    char *m_buf = nullptr;
 
 };
 
