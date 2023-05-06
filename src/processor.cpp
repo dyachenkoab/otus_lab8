@@ -2,7 +2,7 @@
 
 Processor::~Processor()
 {
-    for (auto x : m_files) {
+    for (auto &x : m_files) {
         delete x.ifs;
     }
 }
@@ -96,12 +96,12 @@ uint32_t Processor::hashBulk(fs::ifstream *fstream) const
 
 void Processor::print(const GroupedPrefixes &groups)
 {
-    for (auto group : groups) {
+    for (const auto &group : groups) {
         if (group.size() == 1) {
             continue;
         }
         std::cout << "\n=======group=======\n";
-        for (auto fileInfo : group) {
+        for (const auto &fileInfo : group) {
             std::cout << fileInfo.fileName << '\n';
         }
     }
@@ -137,5 +137,3 @@ void Processor::pushRequest(unique_ptr<Request> request)
 {
     m_requests.emplace_back(boost::move(request));
 }
-
-#include "processor.h"
