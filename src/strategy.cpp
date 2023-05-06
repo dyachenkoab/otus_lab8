@@ -1,13 +1,8 @@
 #include "strategy.h"
 
-iStrategy::iStrategy()
-{
-
-}
-
 uint32_t DefaultHash::hashBulk(char *buf, int)
 {
-    boost::hash<string> string_hash;
+    boost::hash<co::string> string_hash;
     return string_hash(buf);
 }
 

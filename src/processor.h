@@ -21,56 +21,48 @@
 #include "strategy.h"
 #include "handler.h"
 
-using namespace boost::uuids;
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 namespace co = boost::container;
-using boost::char_separator;
-using boost::ptr_vector;
-using boost::tokenizer;
-using boost::container::basic_string;
-using boost::container::string;
-using boost::movelib::unique_ptr;
-
-struct FileInfo
-{
-    fs::path path;
-    co::vector<uint32_t> blocks = boost::initialized_value;
-    uuid id = nil_generator()();
-};
 
 class Processor
 {
-    using fileInfoIterator = co::vector<FileInfo>::iterator;
+
+    struct FileInfo
+    {
+        fs::ifstream *ifs;
+        co::string fileName;
+    };
+
+    using EqualPrefixFiles = co::vector<FileInfo>;
+    using GroupedPrefixes = co::vector<EqualPrefixFiles>;
 
 public:
-    Processor();
+    Processor() = default;
     ~Processor();
 
     void scanLevel(const int level);
     void blockSize(const size_t size);
-    void hashAlgo(const string &hash);
-    void scanDirs(const string &data);
+    void hashAlgo(const co::string &hash);
+    void scanDirs(const co::string &data);
     void pushRequest(unique_ptr<Request> request);
 
-    void checkFile();
-    void print();
+    void checkDirs();
+    void print(const GroupedPrefixes &groups);
 
 private:
     void fillFileList(const fs::path &fPath);
-    void compareFiles(fileInfoIterator &it, fileInfoIterator &it1);
-    uint32_t getBlock(fileInfoIterator &it, fs::ifstream &ifs, const size_t block);
-    uint32_t hashBulk(fs::ifstream &fstream);
+    GroupedPrefixes groupByNextBlock(const EqualPrefixFiles &files) const;
+    uint32_t getBlock(const FileInfo &files) const;
+    uint32_t hashBulk(fs::ifstream *fstream) const;
 
-    co::vector<string> m_included;
+    EqualPrefixFiles m_files;
+
+    co::vector<co::string> m_included;
     co::vector<unique_ptr<Request>> m_requests;
-    co::vector<FileInfo> filesAtCurrentPath;
     unique_ptr<iStrategy> hashStrategy;
     int m_level = 0;
     size_t m_blockSize = 0;
-    random_generator gen;
-
 };
-
 
 #endif // PROCESSOR_H

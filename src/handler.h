@@ -12,7 +12,6 @@ namespace fs = boost::filesystem;
 namespace co = boost::container;
 using boost::regex;
 using boost::smatch;
-using boost::container::string;
 
 class Request
 {
@@ -21,18 +20,18 @@ protected:
 
 public:
     virtual ~Request() { }
-    virtual bool passThrough(const string &fileName) = 0;
+    virtual bool passThrough(const co::string &fileName) = 0;
 };
 
 class ExcludedRequest : public Request
 {
 public:
     ~ExcludedRequest() = default;
-    ExcludedRequest(const string &s) : s(s)
+    ExcludedRequest(const co::string &s)
     {
         split(s, m_excluded);
     };
-    bool passThrough(const string &fileName) override
+    bool passThrough(const co::string &fileName) override
     {
         auto is_subpath = [](const fs::path &path, const fs::path &base) {
             const auto mismatch_pair =
@@ -50,8 +49,7 @@ public:
     };
 
 private:
-    string s;
-    co::set<string> m_excluded;
+    co::set<co::string> m_excluded;
 };
 
 class SizeRequest : public Request
@@ -59,11 +57,11 @@ class SizeRequest : public Request
 public:
     ~SizeRequest() = default;
     SizeRequest(int size) : m_size(size) {};
-    bool passThrough(const string &fileName) override
+    bool passThrough(const co::string &fileName) override
     {
         fs::path file(fileName.c_str());
 
-        if (!fs::is_regular_file(file)) {
+        if (!fs::is_regular_file(file) || fs::is_symlink(file)) {
             return false;
         }
 
@@ -82,8 +80,8 @@ class MaskRequest : public Request
 {
 public:
     ~MaskRequest() = default;
-    MaskRequest(const string &s) : mask(s) {};
-    bool passThrough(const string &fileName) override
+    MaskRequest(const co::string &s) : mask(s) {};
+    bool passThrough(const co::string &fileName) override
     {
         fs::path file(fileName.c_str());
         boost::regex expr { mask.data() };
@@ -91,7 +89,7 @@ public:
     };
 
 private:
-    string mask;
+    co::string mask;
 };
 
 #endif // HANDLER_H

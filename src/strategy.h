@@ -16,10 +16,7 @@
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 namespace co = boost::container;
-using boost::char_separator;
-using boost::tokenizer;
-using boost::container::basic_string;
-using boost::container::string;
+//using boost::container::string;
 using boost::movelib::unique_ptr;
 
 namespace impl {
@@ -27,7 +24,7 @@ template<class Iterator>
 struct is_random_access_iter
 {
     using category = typename std::iterator_traits<Iterator>::iterator_category;
-    static const bool value = std::is_same<category, std::random_access_iterator_tag>::value;
+    static const bool value = std::is_same_v<category, std::random_access_iterator_tag>;
 };
 
 template<class Container>
@@ -38,24 +35,26 @@ struct is_random_access_container
 } // namespace impl
 
 template<typename T>
-void emplace(T &container, const string &s,
-         typename std::enable_if<impl::is_random_access_container<T>::value>::type * = {})
+void emplace(T &container, const co::string &s,
+         typename std::enable_if_t<impl::is_random_access_container<T>::value> * = {})
 {
-    container.emplace_back(boost::move(s));
+    container.emplace_back(s);
 }
 
 template<typename T>
-void emplace(T &container, const string &s,
-         typename std::enable_if<!impl::is_random_access_container<T>::value>::type * = {})
+void emplace(T &container, const co::string &s,
+         typename std::enable_if_t<!impl::is_random_access_container<T>::value> * = {})
 {
-    container.emplace(boost::move(s));
+    container.emplace(s);
 }
 
 template<typename T>
-void split(const string &data, T &container)
+void split(const co::string &data, T &container)
 {
+    using boost::char_separator;
+
     char_separator<char> sep(" ");
-    using tokenizer = tokenizer<char_separator<char>, string::const_iterator, string>;
+    using tokenizer = boost::tokenizer<char_separator<char>, co::string::const_iterator, co::string>;
 
     tokenizer tok(data, sep);
     for (tokenizer::iterator beg = tok.begin(); beg != tok.end(); ++beg) {
@@ -70,7 +69,7 @@ public:
     virtual uint32_t hashBulk(char *buf, int block) = 0;
 
 protected:
-    iStrategy();
+    iStrategy() = default;
 };
 
 class DefaultHash : public iStrategy

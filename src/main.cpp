@@ -13,8 +13,8 @@ int main(int argc, const char *argv[])
     try {
         po::options_description desc { "Options" };
         desc.add_options()("help,h", "Help screen")
-        ("scanDir,s", po::value<string>(), "Scan directory")
-        ("exDir,e", po::value<string>(), "Exclude directory from scan")
+        ("scanDir,s", po::value<co::string>(), "Scan directory")
+        ("exDir,e", po::value<co::string>(), "Exclude directory from scan")
         ("level,l", po::value<int>()->default_value(0)->notifier([&processor](int level) {
             int lev = level;
             if (lev < 0 || lev > 1) {
@@ -24,11 +24,11 @@ int main(int argc, const char *argv[])
             processor.scanLevel(lev);
          }), "Scan level")
          ("min,m", po::value<int>()->default_value(1), "Minimal file size (at bytes) to scan")
-         ("mask", po::value<string>(),"Mask")
+         ("mask", po::value<co::string>(),"Mask")
          ("blockSize,b", po::value<size_t>()->default_value(5)->notifier([&processor](size_t size) {
             processor.blockSize(size);
           }),"Size of block (at bytes) to compare")
-         ("hash", po::value<string>()->default_value("default")->notifier([&processor](const string &hash) {
+         ("hash", po::value<co::string>()->default_value("default")->notifier([&processor](const co::string &hash) {
             processor.hashAlgo(hash);
           }),
           "Hash algorithm, can be default or crc32");
@@ -43,14 +43,14 @@ int main(int argc, const char *argv[])
         }
 
         if (vm.count("scanDir")) {
-            processor.scanDirs(vm["scanDir"].as<string>());
+            processor.scanDirs(vm["scanDir"].as<co::string>());
         } else {
             std::cout << "There is no directory for scan" << std::endl;
             return 0;
         }
 
         if (vm.count("exDir")) {
-            processor.pushRequest(unique_ptr<ExcludedRequest>(new ExcludedRequest(vm["exDir"].as<string>())));
+            processor.pushRequest(unique_ptr<ExcludedRequest>(new ExcludedRequest(vm["exDir"].as<co::string>())));
         }
 
         if (vm.count("min")) {
@@ -58,10 +58,10 @@ int main(int argc, const char *argv[])
         }
 
         if (vm.count("mask")) {
-            processor.pushRequest(unique_ptr<MaskRequest>(new MaskRequest(vm["mask"].as<string>())));
+            processor.pushRequest(unique_ptr<MaskRequest>(new MaskRequest(vm["mask"].as<co::string>())));
         }
 
-        processor.checkFile();
+        processor.checkDirs();
 
     } catch (const po::error &ex) {
         std::cerr << ex.what() << '\n';
