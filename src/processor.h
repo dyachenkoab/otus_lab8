@@ -1,28 +1,18 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 #include <iostream>
-#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/interprocess/shared_memory_object.hpp>
-#include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/container/vector.hpp>
-#include <boost/container/set.hpp>
-#include <boost/container/map.hpp>
 #include <boost/container/string.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/move/unique_ptr.hpp>
 #include <boost/utility/value_init.hpp>
-
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/crc.hpp>
+
 #include "strategy.h"
 #include "handler.h"
 
 namespace fs = boost::filesystem;
-namespace po = boost::program_options;
 namespace co = boost::container;
 
 class Processor
@@ -48,13 +38,12 @@ public:
     void pushRequest(unique_ptr<Request> request);
 
     void checkDirs();
-    void print(const GroupedPrefixes &groups);
 
 private:
     void fillFileList(const fs::path &fPath);
     GroupedPrefixes groupByNextBlock(const EqualPrefixFiles &files) const;
-    uint32_t getBlock(const FileInfo &files) const;
     uint32_t hashBulk(fs::ifstream *fstream) const;
+    void print(const GroupedPrefixes &groups);
 
     EqualPrefixFiles m_files;
 

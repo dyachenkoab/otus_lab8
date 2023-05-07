@@ -1,22 +1,15 @@
 #ifndef STRATEGY_H
 #define STRATEGY_H
 #include <iostream>
-#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/interprocess/shared_memory_object.hpp>
-#include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/container/vector.hpp>
-#include <boost/container/set.hpp>
 #include <boost/container/string.hpp>
 #include <boost/move/unique_ptr.hpp>
-#include <boost/functional/hash.hpp>
 #include <boost/crc.hpp>
 
 namespace fs = boost::filesystem;
-namespace po = boost::program_options;
 namespace co = boost::container;
-//using boost::container::string;
 using boost::movelib::unique_ptr;
 
 namespace impl {

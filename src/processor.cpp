@@ -3,6 +3,7 @@
 Processor::~Processor()
 {
     for (auto &x : m_files) {
+        std::cout << x.fileName << " delete\n";
         delete x.ifs;
     }
 }
@@ -47,15 +48,8 @@ Processor::GroupedPrefixes Processor::groupByNextBlock(const EqualPrefixFiles &f
     }
 
     // Если каждый файл вектора files упирается в конец, нашли дубликаты
-    bool allEnd = true;
-    for (const auto &file : files) {
-        if (!(file.ifs->eof())) {
-            allEnd = false;
-            break;
-        }
-    }
-
-    if (allEnd) {
+    if (std::all_of(files.begin(), files.end(),
+            [&](const FileInfo &file) { return file.ifs->eof(); })) {
         return { files };
     }
 
@@ -63,7 +57,7 @@ Processor::GroupedPrefixes Processor::groupByNextBlock(const EqualPrefixFiles &f
     GroupedPrefixes result;
     std::unordered_map<uint32_t, EqualPrefixFiles> fileMap;
     for (auto &file : files) {
-        const auto fileHash = getBlock(file);
+        const auto fileHash = hashBulk(file.ifs);
         fileMap[fileHash].push_back(file);
     }
 
@@ -74,12 +68,6 @@ Processor::GroupedPrefixes Processor::groupByNextBlock(const EqualPrefixFiles &f
     }
 
     return result;
-}
-
-uint32_t Processor::getBlock(const FileInfo &files) const
-{
-    auto bulk = hashBulk(files.ifs);
-    return bulk;
 }
 
 uint32_t Processor::hashBulk(fs::ifstream *fstream) const

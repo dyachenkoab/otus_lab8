@@ -3,9 +3,9 @@
 #include <iostream>
 #include <boost/container/set.hpp>
 #include <boost/container/string.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
+
 #include "strategy.h"
 
 namespace fs = boost::filesystem;
